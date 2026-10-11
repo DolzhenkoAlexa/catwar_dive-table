@@ -5,7 +5,7 @@ const ACCOUNTS = [
 ];
 
 const CATEGORIES = {
-  text:     { name: 'Текстовый',     color: '#90a3b0' },
+  text:     { name: 'Текстовый',     color: '#4aa3d8' },
   neutral:  { name: 'Нейтральный',   color: '#c0ded6' },
   positive: { name: 'Положительный', color: '#6ec25a' },
   negative: { name: 'Негативный',    color: '#e57b7b' }
