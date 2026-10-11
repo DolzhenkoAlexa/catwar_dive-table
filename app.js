@@ -67,6 +67,10 @@ let negGrouped = true;
 let posGrouped = true;
 let superGrouped = true;
 
+// Фильтр по датам (в формате YYYY-MM-DD, локальное время)
+let filterFrom = '';
+let filterTo   = '';
+
 // ===== Старт =====
 async function init() {
   await Promise.all([loadCatalog(), loadData()]);
@@ -97,6 +101,78 @@ async function loadData() {
     console.warn('Не удалось загрузить data/loot.json:', e.message);
     data = {};
   }
+}
+
+// ===== Фильтр по датам =====
+// Локальная дата YYYY-MM-DD из ISO-строки
+function localDate(iso) {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function getFilteredDrops() {
+  const all = data[currentAccount] || [];
+  if (!filterFrom && !filterTo) return all;
+  return all.filter(d => {
+    const ld = localDate(d.at);
+    if (filterFrom && ld < filterFrom) return false;
+    if (filterTo   && ld > filterTo)   return false;
+    return true;
+  });
+}
+
+function applyFilter() {
+  filterFrom = document.getElementById('dateFrom').value || '';
+  filterTo   = document.getElementById('dateTo').value   || '';
+  render();
+}
+
+function resetFilter() {
+  filterFrom = '';
+  filterTo   = '';
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  render();
+}
+
+function setPreset(kind) {
+  const today = new Date();
+  const toISO = d => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  if (kind === 'today') {
+    filterFrom = toISO(today);
+    filterTo   = toISO(today);
+  } else if (kind === 'yesterday') {
+    const y = new Date(today);
+    y.setDate(today.getDate() - 1);
+    filterFrom = toISO(y);
+    filterTo   = toISO(y);
+  } else if (kind === '7d') {
+    const from = new Date(today);
+    from.setDate(today.getDate() - 6);
+    filterFrom = toISO(from);
+    filterTo   = toISO(today);
+  } else if (kind === '30d') {
+    const from = new Date(today);
+    from.setDate(today.getDate() - 29);
+    filterFrom = toISO(from);
+    filterTo   = toISO(today);
+  } else {
+    filterFrom = '';
+    filterTo   = '';
+  }
+
+  document.getElementById('dateFrom').value = filterFrom;
+  document.getElementById('dateTo').value   = filterTo;
+  render();
 }
 
 // ===== Аккаунты =====
@@ -143,7 +219,12 @@ function addDrop() {
 }
 
 function removeDrop(index) {
-  data[currentAccount].splice(index, 1);
+  // index приходит из отфильтрованного списка, поэтому сначала находим реальный drop
+  const filtered = getFilteredDrops();
+  const target = filtered[index];
+  if (!target) return;
+  const realIndex = data[currentAccount].indexOf(target);
+  if (realIndex >= 0) data[currentAccount].splice(realIndex, 1);
   render();
 }
 
@@ -199,8 +280,9 @@ function render() {
   renderDrops();
   renderChart();
 }
+
 function renderStats() {
-  const drops = data[currentAccount] || [];
+  const drops = getFilteredDrops();
   const counts = { text: 0, neutral: 0, positive: 0, super: 0, negative: 0 };
   const damage = { раны: 0, переломы: 0, отравление: 0 };
   let totalDamage = 0;
@@ -224,6 +306,18 @@ function renderStats() {
   document.getElementById('currentName').textContent =
     ACCOUNTS.find(a => a.id === currentAccount).name;
 
+  // метка периода в заголовке статистики
+  const periodEl = document.getElementById('periodLabel');
+  if (periodEl) {
+    if (filterFrom || filterTo) {
+      const from = filterFrom || '…';
+      const to   = filterTo   || '…';
+      periodEl.textContent = ` (${from} – ${to})`;
+    } else {
+      periodEl.textContent = '';
+    }
+  }
+
   const total = drops.length;
   const pct = n => total ? ((n / total) * 100).toFixed(1).replace('.0', '') + '%' : '0%';
 
@@ -232,7 +326,6 @@ function renderStats() {
     .map(([k, v]) => `${k}: <b>${v}</b>`)
     .join(' · ');
 
-  // Собираем содержимое тултипа для «Супер»
   const superList = Object.entries(superItems).sort((a, b) => b[1] - a[1]);
   const superPopup = superList.length ? `
     <div class="tile-popup">
@@ -260,7 +353,7 @@ function renderStats() {
 }
 
 function renderDrops() {
-  const drops = data[currentAccount] || [];
+  const drops = getFilteredDrops();
   document.getElementById('dropCount').textContent = drops.length ? `(${drops.length})` : '';
 
   const list = document.getElementById('dropsList');
@@ -299,7 +392,7 @@ function renderDrops() {
 
 // ===== График =====
 function renderChart() {
-  const drops = data[currentAccount] || [];
+  const drops = getFilteredDrops();
 
   let textCount = 0;
   let neutralCount = 0;
@@ -454,6 +547,7 @@ function renderChart() {
 }
 
 // ===== Экспорт / импорт =====
+// Экспорт всегда выгружает ВСЕ данные, а не только отфильтрованные
 function exportFile() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
