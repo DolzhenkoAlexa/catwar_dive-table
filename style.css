@@ -476,3 +476,12 @@ button.primary:hover { background: var(--accent-dark); }
 .stat-tile.has-popup:hover .tile-popup {
   opacity: 1;
 }
+
+/* процент рядом с числом в статистике */
+.stat-tile .pct {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  margin-left: 5px;
+  vertical-align: middle;
+}
