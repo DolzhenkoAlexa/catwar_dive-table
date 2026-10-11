@@ -26,13 +26,13 @@ const POS_GROUPS = [
     match: n => n === 'Ком из веток и водорослей' }
 ];
 
-// Группы супер-удачного лута (тёплые оттенки: янтарь, золото, оранж)
+// Группы супер-удачного лута
 const SUPER_GROUPS = [
-  { key: 'dense',   label: 'Плотная водоросль',   color: '#f9a825',
+  { key: 'dense',   label: 'Плотная водоросль',   color: '#4caf50',
     match: n => n === 'Плотная водоросль' },
-  { key: 'healing', label: 'Целебная водоросль',  color: '#f57f17',
+  { key: 'healing', label: 'Целебная водоросль',  color: '#2e7d32',
     match: n => n === 'Целебная водоросль' },
-  { key: 'branch',  label: 'Крепкая ветка',       color: '#bf8f00',
+  { key: 'branch',  label: 'Крепкая ветка',       color: '#8d6e63',
     match: n => n === 'Крепкая ветка' },
   { key: 'coral',   label: 'Алые кораллы',        color: '#ff6f00',
     match: n => n.startsWith('Алый коралл') },
@@ -206,6 +206,9 @@ function renderStats() {
   const damage = { раны: 0, переломы: 0, отравление: 0 };
   let totalDamage = 0;
 
+  // Для тултипа на плитке «Супер» — разбивка по названиям
+  const superItems = {};
+
   drops.forEach(d => {
     const item = findInCatalog(d.catalogId);
     if (!item) return;
@@ -213,6 +216,9 @@ function renderStats() {
     if (item.category === 'negative') {
       totalDamage += item.damage || 0;
       if (item.effect) damage[item.effect] = (damage[item.effect] || 0) + (item.damage || 0);
+    }
+    if (item.category === 'super') {
+      superItems[item.name] = (superItems[item.name] || 0) + 1;
     }
   });
 
@@ -224,13 +230,27 @@ function renderStats() {
     .map(([k, v]) => `${k}: <b>${v}</b>`)
     .join(' · ');
 
+  // Собираем содержимое тултипа для «Супер»
+  const superList = Object.entries(superItems).sort((a, b) => b[1] - a[1]);
+  const superPopup = superList.length ? `
+    <div class="tile-popup">
+      ${superList.map(([name, cnt]) =>
+        `<div><b>${cnt}</b> ${escapeHtml(name)}</div>`
+      ).join('')}
+    </div>
+  ` : '';
+
   document.getElementById('stats').innerHTML = `
     <div class="stat-grid">
       <div class="stat-tile"><div class="label">Всего</div><div class="value">${drops.length}</div></div>
       <div class="stat-tile text"><div class="label">Текст</div><div class="value">${counts.text}</div></div>
       <div class="stat-tile neutral"><div class="label">Нейтрал</div><div class="value">${counts.neutral}</div></div>
       <div class="stat-tile positive"><div class="label">Плюс</div><div class="value">${counts.positive}</div></div>
-      <div class="stat-tile super"><div class="label">Супер</div><div class="value">${counts.super}</div></div>
+      <div class="stat-tile super${superList.length ? ' has-popup' : ''}">
+        <div class="label">Супер</div>
+        <div class="value">${counts.super}</div>
+        ${superPopup}
+      </div>
       <div class="stat-tile negative"><div class="label">Минус</div><div class="value">${counts.negative}</div></div>
     </div>
     ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}</b>${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
