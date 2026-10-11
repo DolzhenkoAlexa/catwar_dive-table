@@ -11,6 +11,7 @@
   --c-text: #b8ddf0;
   --c-neutral: #c0ded6;
   --c-positive: #6ec25a;
+  --c-super: #ffc107;
   --c-negative: #e57b7b;
 }
 
@@ -134,7 +135,7 @@ header h1 {
 /* статистика */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 6px;
 }
 
@@ -163,6 +164,7 @@ header h1 {
 .stat-tile.text     { border-color: var(--c-text); }
 .stat-tile.neutral  { border-color: var(--c-neutral); }
 .stat-tile.positive { border-color: var(--c-positive); }
+.stat-tile.super    { border-color: var(--c-super); }
 .stat-tile.negative { border-color: var(--c-negative); }
 
 .damage-line {
@@ -263,7 +265,7 @@ button.primary:hover { background: var(--accent-dark); }
 .files-row button:hover,
 .files-row .btn:hover { border-color: var(--accent); color: var(--accent-dark); }
 
-/* список записей — отдельная прокрутка */
+/* список записей */
 .drops-card {
   display: flex;
   flex-direction: column;
@@ -350,6 +352,7 @@ button.primary:hover { background: var(--accent-dark); }
 .tag.text     { background: #e0eff8; color: #5a9bc0; }
 .tag.neutral  { background: #eaf3f0; color: #6b8f85; }
 .tag.positive { background: #e6f5e0; color: #4c9e3a; }
+.tag.super    { background: #fff8e1; color: #b28704; }
 .tag.negative { background: #fbe5e5; color: #b85555; }
 
 .empty {
@@ -380,7 +383,7 @@ button.primary:hover { background: var(--accent-dark); }
   color: #fff;
 }
 
-/* пометки к луту (например «на сон») */
+/* пометки к луту */
 .drop-item .note {
   font-size: 0.68rem;
   color: #7b5e00;
