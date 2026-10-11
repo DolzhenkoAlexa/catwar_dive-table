@@ -56,7 +56,7 @@ const DATA_URL    = 'data/loot.json';
 const IMAGES_DIR  = 'images/';
 
 // ===== Состояние =====
-let catalog = { notes: [], text: [], neutral: [], positive: [], super: [], negative: [] };
+let catalog = { notes: {}, text: [], neutral: [], positive: [], super: [], negative: [] };
 let data = {};
 let currentAccount = ACCOUNTS[0].id;
 let pieChart = null;
@@ -72,13 +72,12 @@ let filterTo   = '';
 async function init() {
   await Promise.all([loadCatalog(), loadData()]);
   ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
-  if (!Array.isArray(catalog.notes)) catalog.notes = [];
+  catalog.notes = normalizeNotes(catalog.notes);
   renderAccounts();
   renderCatalogSelect();
   updateToggles();
   render();
 
-  // закрытие модалки по Escape
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeNotesModal();
   });
@@ -90,7 +89,7 @@ async function loadCatalog() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     catalog = await r.json();
     Object.keys(CATEGORIES).forEach(k => { if (!Array.isArray(catalog[k])) catalog[k] = []; });
-    if (!Array.isArray(catalog.notes)) catalog.notes = [];
+    catalog.notes = normalizeNotes(catalog.notes);
   } catch (e) {
     console.warn('Не удалось загрузить catalog.json:', e.message);
   }
@@ -105,6 +104,25 @@ async function loadData() {
     console.warn('Не удалось загрузить data/loot.json:', e.message);
     data = {};
   }
+}
+
+// ===== Заметки: нормализация формата =====
+// Приводит notes к виду { accountId: [ ... ] }.
+// Старый формат (просто массив) переносится в текущий аккаунт.
+function normalizeNotes(raw) {
+  const result = {};
+  ACCOUNTS.forEach(a => result[a.id] = []);
+
+  if (Array.isArray(raw)) {
+    result[currentAccount] = raw.slice();
+    return result;
+  }
+  if (raw && typeof raw === 'object') {
+    ACCOUNTS.forEach(a => {
+      if (Array.isArray(raw[a.id])) result[a.id] = raw[a.id];
+    });
+  }
+  return result;
 }
 
 // ===== Фильтр по датам =====
@@ -150,19 +168,22 @@ function openNotesModal() {
 }
 
 function closeNotesModal(e) {
-  // если клик пришёл от дочернего элемента — не закрываем
   if (e && e.target && e.target !== e.currentTarget) return;
   document.getElementById('notesOverlay').classList.remove('open');
 }
 
 function renderNotesList() {
   const list = document.getElementById('notesList');
-  const notes = catalog.notes || [];
+  const notes = (catalog.notes && catalog.notes[currentAccount]) || [];
+  const accName = ACCOUNTS.find(a => a.id === currentAccount).name;
+
+  const header = `<div class="notes-owner">Заметки: <b>${escapeHtml(accName)}</b></div>`;
+
   if (!notes.length) {
-    list.innerHTML = '<div class="empty-notes">Пока нет заметок</div>';
+    list.innerHTML = header + '<div class="empty-notes">Пока нет заметок</div>';
     return;
   }
-  list.innerHTML = notes.map((n, i) => `
+  list.innerHTML = header + notes.map((n, i) => `
     <div class="note-item">
       <span class="text">${escapeHtml(n)}</span>
       <button class="note-remove" onclick="removeNote(${i})" title="Удалить">✕</button>
@@ -174,15 +195,16 @@ function addNote() {
   const input = document.getElementById('noteInput');
   const text = input.value.trim();
   if (!text) return;
-  if (!Array.isArray(catalog.notes)) catalog.notes = [];
-  catalog.notes.push(text);
+  if (!catalog.notes || typeof catalog.notes !== 'object') catalog.notes = {};
+  if (!Array.isArray(catalog.notes[currentAccount])) catalog.notes[currentAccount] = [];
+  catalog.notes[currentAccount].push(text);
   input.value = '';
   renderNotesList();
 }
 
 function removeNote(index) {
-  if (!Array.isArray(catalog.notes)) return;
-  catalog.notes.splice(index, 1);
+  if (!catalog.notes || !Array.isArray(catalog.notes[currentAccount])) return;
+  catalog.notes[currentAccount].splice(index, 1);
   renderNotesList();
 }
 
@@ -199,6 +221,10 @@ function switchAccount(id) {
   currentAccount = id;
   renderAccounts();
   render();
+  const overlay = document.getElementById('notesOverlay');
+  if (overlay && overlay.classList.contains('open')) {
+    renderNotesList();
+  }
 }
 
 // ===== Каталог =====
@@ -540,7 +566,6 @@ function renderChart() {
 }
 
 // ===== Экспорт / импорт =====
-// Скачивает два файла: loot.json (данные) и catalog.json (каталог + заметки).
 function downloadJSON(filename, obj) {
   const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -553,7 +578,6 @@ function downloadJSON(filename, obj) {
 
 function exportFile() {
   downloadJSON('loot.json', data);
-  // каталог скачиваем следом — браузер спросит разрешение на множественную загрузку один раз
   setTimeout(() => downloadJSON('catalog.json', catalog), 200);
 }
 
@@ -567,8 +591,7 @@ document.getElementById('fileInput').addEventListener('change', e => {
       if (typeof parsed !== 'object' || Array.isArray(parsed))
         throw new Error('ожидался объект');
 
-      // определяем, что загрузили: каталог или данные
-      const looksLikeCatalog = Array.isArray(parsed.text) || Array.isArray(parsed.super) || Array.isArray(parsed.notes);
+      const looksLikeCatalog = Array.isArray(parsed.text) || Array.isArray(parsed.super) || parsed.notes;
       const looksLikeData = ('phil' in parsed) || ('shao' in parsed);
 
       if (looksLikeCatalog && !looksLikeData) {
@@ -577,7 +600,7 @@ document.getElementById('fileInput').addEventListener('change', e => {
         }
         catalog = parsed;
         Object.keys(CATEGORIES).forEach(k => { if (!Array.isArray(catalog[k])) catalog[k] = []; });
-        if (!Array.isArray(catalog.notes)) catalog.notes = [];
+        catalog.notes = normalizeNotes(catalog.notes);
         renderCatalogSelect();
         render();
       } else {
