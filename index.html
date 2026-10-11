@@ -8,54 +8,59 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>🌊 Дайв-лут 🌊</h1>
-    <p class="subtitle">Трекер подводного лута</p>
-  </header>
+  <div class="app">
+    <header>
+      <h1>🌊 Дайв-лут 🌊</h1>
+      <nav class="accounts" id="accounts"></nav>
+    </header>
 
-  <nav class="accounts" id="accounts"></nav>
+    <main class="layout">
+      <!-- Левая колонка -->
+      <div class="col col-left">
+        <section class="card stats-card">
+          <h2>Статистика: <span id="currentName"></span></h2>
+          <div id="stats"></div>
+        </section>
 
-  <main>
-    <section class="card stats-card">
-      <h2>Статистика: <span id="currentName"></span></h2>
-      <div id="stats"></div>
-    </section>
+        <section class="card chart-card">
+          <div class="chart-head">
+            <h2>Соотношение лута</h2>
+            <button id="toggleNeg" class="toggle active" onclick="toggleNeg()"></button>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </section>
 
-    <section class="card chart-card">
-      <h2>Соотношение лута</h2>
-      <div class="chart-toggles">
-        <button id="toggleNeg" class="toggle active" onclick="toggleNeg()"></button>
+        <section class="card add-card">
+          <h2>Добавить лут</h2>
+          <div class="add-row">
+            <select id="catalogSelect"></select>
+            <button class="primary" onclick="addDrop()">+</button>
+          </div>
+        </section>
+
+        <section class="card files-card">
+          <div class="files-row">
+            <button onclick="exportFile()">💾 Скачать JSON</button>
+            <label class="btn">
+              📂 Загрузить JSON
+              <input type="file" id="fileInput" accept=".json" hidden>
+            </label>
+          </div>
+        </section>
       </div>
-      <div class="chart-wrap">
-        <canvas id="pieChart"></canvas>
+
+      <!-- Правая колонка -->
+      <div class="col col-right">
+        <section class="card drops-card">
+          <h2>Записи <span class="count" id="dropCount"></span></h2>
+          <div id="dropsList" class="drops-list"></div>
+        </section>
       </div>
-    </section>
+    </main>
+  </div>
 
-    <section class="card add-card">
-      <h2>Добавить лут</h2>
-      <div class="add-row">
-        <select id="catalogSelect"></select>
-        <button class="primary" onclick="addDrop()">Добавить</button>
-      </div>
-    </section>
-
-    <section class="card drops-card">
-      <h2>Записи <span class="count" id="dropCount"></span></h2>
-      <div id="dropsList" class="drops-list"></div>
-    </section>
-
-    <section class="card files-card">
-      <h2>Файл данных</h2>
-      <div class="files-row">
-        <button onclick="exportFile()">💾 Скачать JSON</button>
-        <label class="btn">
-          📂 Загрузить JSON
-          <input type="file" id="fileInput" accept=".json" hidden>
-        </label>
-      </div>
-    </section>
-  </main>
-
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
