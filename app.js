@@ -5,34 +5,39 @@ const ACCOUNTS = [
 ];
 
 const CATEGORIES = {
-  text:     { name: 'Текстовый',     color: '#b8ddf0' },
-  neutral:  { name: 'Нейтральный',   color: '#c0ded6' },
-  positive: { name: 'Положительный', color: '#6ec25a' },
-  negative: { name: 'Негативный',    color: '#e57b7b' }
+  text:     { name: 'Текстовый',      color: '#b8ddf0' },
+  neutral:  { name: 'Нейтральный',    color: '#c0ded6' },
+  positive: { name: 'Положительный',  color: '#6ec25a' },
+  super:    { name: 'Супер удачный',  color: '#ffc107' },
+  negative: { name: 'Негативный',     color: '#e57b7b' }
 };
 
-// Группы позитивного лута
+// Группы положительного лута
 const POS_GROUPS = [
-  { key: 'moss',    label: 'Мхи',                 color: '#7cb342',
+  { key: 'moss',    label: 'Мхи',                color: '#7cb342',
     match: n => n === 'Обычный мох' || n === 'Наполненный водой мох' },
-  { key: 'dense',   label: 'Плотная водоросль',   color: '#4caf50',
-    match: n => n === 'Плотная водоросль' },
-  { key: 'healing', label: 'Целебная водоросль',  color: '#2e7d32',
-    match: n => n === 'Целебная водоросль' },
-  { key: 'branch',  label: 'Крепкая ветка',       color: '#8d6e63',
-    match: n => n === 'Крепкая ветка' },
-  { key: 'stone_c', label: 'Крошечный камень',    color: '#cfd8dc',
+  { key: 'stone_c', label: 'Крошечный камень',   color: '#cfd8dc',
     match: n => n === 'Крошечный камень' },
-  { key: 'stone_s', label: 'Небольшой камень',    color: '#b0bec5',
+  { key: 'stone_s', label: 'Небольшой камень',   color: '#b0bec5',
     match: n => n === 'Небольшой камень' },
-  { key: 'stone_l', label: 'Камень',              color: '#90a4ae',
+  { key: 'stone_l', label: 'Камень',             color: '#90a4ae',
     match: n => n === 'Камень' },
-  { key: 'coral',   label: 'Алые кораллы',        color: '#f57c00',
+  { key: 'kom',     label: 'Ком из веток и водорослей', color: '#00e676',
+    match: n => n === 'Ком из веток и водорослей' }
+];
+
+// Группы супер-удачного лута (тёплые оттенки: янтарь, золото, оранж)
+const SUPER_GROUPS = [
+  { key: 'dense',   label: 'Плотная водоросль',   color: '#f9a825',
+    match: n => n === 'Плотная водоросль' },
+  { key: 'healing', label: 'Целебная водоросль',  color: '#f57f17',
+    match: n => n === 'Целебная водоросль' },
+  { key: 'branch',  label: 'Крепкая ветка',       color: '#bf8f00',
+    match: n => n === 'Крепкая ветка' },
+  { key: 'coral',   label: 'Алые кораллы',        color: '#ff6f00',
     match: n => n.startsWith('Алый коралл') },
   { key: 'seaweed', label: 'Листы водорослей',    color: '#ffb300',
     match: n => n.startsWith('Лист морской водоросли') },
-  { key: 'kom',     label: 'Ком из веток и водорослей', color: '#00e676',
-    match: n => n === 'Ком из веток и водорослей' },
   { key: 'iskra',   label: 'Искра',               color: '#ffee00',
     match: n => n === 'Искра' }
 ];
@@ -54,12 +59,13 @@ const DATA_URL    = 'data/loot.json';
 const IMAGES_DIR  = 'images/';
 
 // ===== Состояние =====
-let catalog = { text: [], neutral: [], positive: [], negative: [] };
+let catalog = { text: [], neutral: [], positive: [], super: [], negative: [] };
 let data = {};
 let currentAccount = ACCOUNTS[0].id;
 let pieChart = null;
 let negGrouped = true;
 let posGrouped = true;
+let superGrouped = true;
 
 // ===== Старт =====
 async function init() {
@@ -76,6 +82,7 @@ async function loadCatalog() {
     const r = await fetch(CATALOG_URL + '?t=' + Date.now());
     if (!r.ok) throw new Error('HTTP ' + r.status);
     catalog = await r.json();
+    Object.keys(CATEGORIES).forEach(k => { if (!Array.isArray(catalog[k])) catalog[k] = []; });
   } catch (e) {
     console.warn('Не удалось загрузить catalog.json:', e.message);
   }
@@ -162,6 +169,12 @@ function togglePos() {
   renderChart();
 }
 
+function toggleSuper() {
+  superGrouped = !superGrouped;
+  updateToggles();
+  renderChart();
+}
+
 function updateToggles() {
   const btnN = document.getElementById('toggleNeg');
   if (btnN) {
@@ -172,6 +185,11 @@ function updateToggles() {
   if (btnP) {
     btnP.textContent = posGrouped ? '🟢 Позитив: по видам' : '🟢 Позитив: общий';
     btnP.classList.toggle('active', posGrouped);
+  }
+  const btnS = document.getElementById('toggleSuper');
+  if (btnS) {
+    btnS.textContent = superGrouped ? '🟡 Супер: по видам' : '🟡 Супер: общий';
+    btnS.classList.toggle('active', superGrouped);
   }
 }
 
@@ -184,7 +202,7 @@ function render() {
 
 function renderStats() {
   const drops = data[currentAccount] || [];
-  const counts = { text: 0, neutral: 0, positive: 0, negative: 0 };
+  const counts = { text: 0, neutral: 0, positive: 0, super: 0, negative: 0 };
   const damage = { раны: 0, переломы: 0, отравление: 0 };
   let totalDamage = 0;
 
@@ -212,6 +230,7 @@ function renderStats() {
       <div class="stat-tile text"><div class="label">Текст</div><div class="value">${counts.text}</div></div>
       <div class="stat-tile neutral"><div class="label">Нейтрал</div><div class="value">${counts.neutral}</div></div>
       <div class="stat-tile positive"><div class="label">Плюс</div><div class="value">${counts.positive}</div></div>
+      <div class="stat-tile super"><div class="label">Супер</div><div class="value">${counts.super}</div></div>
       <div class="stat-tile negative"><div class="label">Минус</div><div class="value">${counts.negative}</div></div>
     </div>
     ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}</b>${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
@@ -263,12 +282,16 @@ function renderChart() {
   let textCount = 0;
   let neutralCount = 0;
   let posTotal = 0;
+  let superTotal = 0;
   let negTotal = 0;
   const posCounts = {};
+  const superCounts = {};
   const negCounts = {};
   POS_GROUPS.forEach(g => posCounts[g.key] = 0);
+  SUPER_GROUPS.forEach(g => superCounts[g.key] = 0);
   NEG_GROUPS.forEach(g => negCounts[g.key] = 0);
   let posOther = 0;
+  let superOther = 0;
   let negOther = 0;
 
   drops.forEach(d => {
@@ -282,6 +305,12 @@ function renderChart() {
       const g = POS_GROUPS.find(x => x.match(item.name));
       if (g) posCounts[g.key]++;
       else posOther++;
+    }
+    else if (item.category === 'super') {
+      superTotal++;
+      const g = SUPER_GROUPS.find(x => x.match(item.name));
+      if (g) superCounts[g.key]++;
+      else superOther++;
     }
     else if (item.category === 'negative') {
       negTotal++;
@@ -306,6 +335,19 @@ function renderChart() {
     if (posOther) slices.push({ label: `Позитив, прочее (${posOther})`, value: posOther, color: '#c5e1a5' });
   } else {
     if (posTotal) slices.push({ label: `Позитив (${posTotal})`, value: posTotal, color: CATEGORIES.positive.color });
+  }
+
+  if (superGrouped) {
+    SUPER_GROUPS.forEach(g => {
+      if (superCounts[g.key]) slices.push({
+        label: `${g.label} (${superCounts[g.key]})`,
+        value: superCounts[g.key],
+        color: g.color
+      });
+    });
+    if (superOther) slices.push({ label: `Супер, прочее (${superOther})`, value: superOther, color: '#ffe082' });
+  } else {
+    if (superTotal) slices.push({ label: `Супер (${superTotal})`, value: superTotal, color: CATEGORIES.super.color });
   }
 
   if (negGrouped) {
