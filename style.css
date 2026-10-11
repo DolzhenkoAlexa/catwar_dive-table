@@ -385,3 +385,11 @@ button.primary:hover { background: var(--accent-dark); }
 
   .chart-wrap { max-width: 220px; }
 }
+
+/* переключатели графика — общий ряд под заголовком */
+.chart-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+}
