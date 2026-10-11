@@ -248,3 +248,31 @@ button.primary:hover { background: var(--accent-dark); }
   padding: 3rem 0;
   font-size: 0.9rem;
 }
+
+/* переключатели графика */
+.chart-toggles {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.toggle {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.toggle:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+.toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
