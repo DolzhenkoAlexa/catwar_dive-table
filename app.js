@@ -12,7 +12,6 @@ const CATEGORIES = {
   negative: { name: 'Негативный',     color: '#e57b7b' }
 };
 
-// Группы положительного лута
 const POS_GROUPS = [
   { key: 'moss',    label: 'Мхи',                color: '#7cb342',
     match: n => n === 'Обычный мох' || n === 'Наполненный водой мох' },
@@ -26,7 +25,6 @@ const POS_GROUPS = [
     match: n => n === 'Ком из веток и водорослей' }
 ];
 
-// Группы супер-удачного лута
 const SUPER_GROUPS = [
   { key: 'dense',   label: 'Плотная водоросль',   color: '#4caf50',
     match: n => n === 'Плотная водоросль' },
@@ -42,7 +40,6 @@ const SUPER_GROUPS = [
     match: n => n === 'Искра' }
 ];
 
-// Группы негативного лута
 const NEG_GROUPS = [
   { key: 'crab',  label: 'Крабы',  color: '#b71c1c',
     match: n => n.startsWith('Живой краб') },
@@ -59,7 +56,7 @@ const DATA_URL    = 'data/loot.json';
 const IMAGES_DIR  = 'images/';
 
 // ===== Состояние =====
-let catalog = { text: [], neutral: [], positive: [], super: [], negative: [] };
+let catalog = { notes: [], text: [], neutral: [], positive: [], super: [], negative: [] };
 let data = {};
 let currentAccount = ACCOUNTS[0].id;
 let pieChart = null;
@@ -67,7 +64,7 @@ let negGrouped = true;
 let posGrouped = true;
 let superGrouped = true;
 
-// Фильтр по датам (в формате YYYY-MM-DD, локальное время)
+// Фильтр по датам
 let filterFrom = '';
 let filterTo   = '';
 
@@ -75,10 +72,16 @@ let filterTo   = '';
 async function init() {
   await Promise.all([loadCatalog(), loadData()]);
   ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
+  if (!Array.isArray(catalog.notes)) catalog.notes = [];
   renderAccounts();
   renderCatalogSelect();
   updateToggles();
   render();
+
+  // закрытие модалки по Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNotesModal();
+  });
 }
 
 async function loadCatalog() {
@@ -87,6 +90,7 @@ async function loadCatalog() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     catalog = await r.json();
     Object.keys(CATEGORIES).forEach(k => { if (!Array.isArray(catalog[k])) catalog[k] = []; });
+    if (!Array.isArray(catalog.notes)) catalog.notes = [];
   } catch (e) {
     console.warn('Не удалось загрузить catalog.json:', e.message);
   }
@@ -104,7 +108,6 @@ async function loadData() {
 }
 
 // ===== Фильтр по датам =====
-// Локальная дата YYYY-MM-DD из ISO-строки
 function localDate(iso) {
   const d = new Date(iso);
   const y = d.getFullYear();
@@ -136,6 +139,51 @@ function resetFilter() {
   document.getElementById('dateFrom').value = '';
   document.getElementById('dateTo').value = '';
   render();
+}
+
+// ===== Заметки =====
+function openNotesModal() {
+  renderNotesList();
+  document.getElementById('noteInput').value = '';
+  document.getElementById('notesOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('noteInput').focus(), 60);
+}
+
+function closeNotesModal(e) {
+  // если клик пришёл от дочернего элемента — не закрываем
+  if (e && e.target && e.target !== e.currentTarget) return;
+  document.getElementById('notesOverlay').classList.remove('open');
+}
+
+function renderNotesList() {
+  const list = document.getElementById('notesList');
+  const notes = catalog.notes || [];
+  if (!notes.length) {
+    list.innerHTML = '<div class="empty-notes">Пока нет заметок</div>';
+    return;
+  }
+  list.innerHTML = notes.map((n, i) => `
+    <div class="note-item">
+      <span class="text">${escapeHtml(n)}</span>
+      <button class="note-remove" onclick="removeNote(${i})" title="Удалить">✕</button>
+    </div>
+  `).join('');
+}
+
+function addNote() {
+  const input = document.getElementById('noteInput');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!Array.isArray(catalog.notes)) catalog.notes = [];
+  catalog.notes.push(text);
+  input.value = '';
+  renderNotesList();
+}
+
+function removeNote(index) {
+  if (!Array.isArray(catalog.notes)) return;
+  catalog.notes.splice(index, 1);
+  renderNotesList();
 }
 
 // ===== Аккаунты =====
@@ -182,7 +230,6 @@ function addDrop() {
 }
 
 function removeDrop(index) {
-  // index приходит из отфильтрованного списка, поэтому сначала находим реальный drop
   const filtered = getFilteredDrops();
   const target = filtered[index];
   if (!target) return;
@@ -193,7 +240,7 @@ function removeDrop(index) {
 
 // ===== Поиск =====
 function findInCatalog(catalogId) {
-  for (const cat of Object.keys(catalog)) {
+  for (const cat of Object.keys(CATEGORIES)) {
     const found = (catalog[cat] || []).find(x => x.id === catalogId);
     if (found) return { ...found, category: cat };
   }
@@ -201,23 +248,9 @@ function findInCatalog(catalogId) {
 }
 
 // ===== Переключатели =====
-function toggleNeg() {
-  negGrouped = !negGrouped;
-  updateToggles();
-  renderChart();
-}
-
-function togglePos() {
-  posGrouped = !posGrouped;
-  updateToggles();
-  renderChart();
-}
-
-function toggleSuper() {
-  superGrouped = !superGrouped;
-  updateToggles();
-  renderChart();
-}
+function toggleNeg() { negGrouped = !negGrouped; updateToggles(); renderChart(); }
+function togglePos() { posGrouped = !posGrouped; updateToggles(); renderChart(); }
+function toggleSuper() { superGrouped = !superGrouped; updateToggles(); renderChart(); }
 
 function updateToggles() {
   const btnN = document.getElementById('toggleNeg');
@@ -249,8 +282,6 @@ function renderStats() {
   const counts = { text: 0, neutral: 0, positive: 0, super: 0, negative: 0 };
   const damage = { раны: 0, переломы: 0, отравление: 0 };
   let totalDamage = 0;
-
-  // Для тултипа на плитке «Супер» — разбивка по названиям
   const superItems = {};
 
   drops.forEach(d => {
@@ -269,7 +300,6 @@ function renderStats() {
   document.getElementById('currentName').textContent =
     ACCOUNTS.find(a => a.id === currentAccount).name;
 
-  // метка периода в заголовке статистики
   const periodEl = document.getElementById('periodLabel');
   if (periodEl) {
     if (filterFrom || filterTo) {
@@ -510,15 +540,21 @@ function renderChart() {
 }
 
 // ===== Экспорт / импорт =====
-// Экспорт всегда выгружает ВСЕ данные, а не только отфильтрованные
-function exportFile() {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+// Скачивает два файла: loot.json (данные) и catalog.json (каталог + заметки).
+function downloadJSON(filename, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'loot.json';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function exportFile() {
+  downloadJSON('loot.json', data);
+  // каталог скачиваем следом — браузер спросит разрешение на множественную загрузку один раз
+  setTimeout(() => downloadJSON('catalog.json', catalog), 200);
 }
 
 document.getElementById('fileInput').addEventListener('change', e => {
@@ -529,13 +565,29 @@ document.getElementById('fileInput').addEventListener('change', e => {
     try {
       const parsed = JSON.parse(ev.target.result);
       if (typeof parsed !== 'object' || Array.isArray(parsed))
-        throw new Error('ожидался объект с аккаунтами');
-      if (!confirm('Заменить текущие данные содержимым файла?')) {
-        e.target.value = ''; return;
+        throw new Error('ожидался объект');
+
+      // определяем, что загрузили: каталог или данные
+      const looksLikeCatalog = Array.isArray(parsed.text) || Array.isArray(parsed.super) || Array.isArray(parsed.notes);
+      const looksLikeData = ('phil' in parsed) || ('shao' in parsed);
+
+      if (looksLikeCatalog && !looksLikeData) {
+        if (!confirm('Похоже на catalog.json — заменить текущий каталог (включая заметки)?')) {
+          e.target.value = ''; return;
+        }
+        catalog = parsed;
+        Object.keys(CATEGORIES).forEach(k => { if (!Array.isArray(catalog[k])) catalog[k] = []; });
+        if (!Array.isArray(catalog.notes)) catalog.notes = [];
+        renderCatalogSelect();
+        render();
+      } else {
+        if (!confirm('Похоже на loot.json — заменить текущие данные?')) {
+          e.target.value = ''; return;
+        }
+        data = parsed;
+        ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
+        render();
       }
-      data = parsed;
-      ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
-      render();
     } catch (err) {
       alert('Ошибка файла: ' + err.message);
     }
