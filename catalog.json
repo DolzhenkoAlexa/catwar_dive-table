@@ -1,19 +1,23 @@
 {
   "text": [
-    { "id": "txt_skat_attack",   "name": "Скат попытался меня атаковать. Едва увернулся." },
-    { "id": "txt_seaweed",       "name": "Запутался в водорослях. Едва выжил." },
-    { "id": "txt_lobster",       "name": "Увидел лобстера. Лобстер угрожающе клацнул клешнями." },
-    { "id": "txt_big_lobster",   "name": "Увидел огромного лобстера. Испугался." }
+    { "id": "txt_generic", "name": "Текстовое событие" }
   ],
-  "neutral": [],
+  "neutral": [
+    { "id": "neu_salmon",   "name": "Коралловый лосось",   "image": "korallosos.png" },
+    { "id": "neu_lucian",   "name": "Жёлто-синий луциан",  "image": "yellowblue.png" },
+    { "id": "neu_surgeon",  "name": "Хирурговая рыба",     "image": "hirirrg.png" },
+    { "id": "neu_clown",    "name": "Рыба-клоун",          "image": "clownfish.png" },
+    { "id": "neu_sigan",    "name": "Сиган",               "image": "sigan.png" },
+    { "id": "neu_butterfly", "name": "Рыба-бабочка",        "image": "babochkafish.png" }
+  ],
   "positive": [],
   "negative": [
     { "id": "neg_crab_1", "name": "Живой краб (оранжево-голубой)", "image": "3975.png", "damage": 5,  "effect": "раны" },
-    { "id": "neg_crab_2", "name": "Живой краб (зеленый)", "image": "3977.png", "damage": 5,  "effect": "раны" },
-    { "id": "neg_crab_3", "name": "Живой краб (бордовый)", "image": "3979.png", "damage": 5,  "effect": "раны" },
+    { "id": "neg_crab_2", "name": "Живой краб (зелёный)",          "image": "3977.png", "damage": 5,  "effect": "раны" },
+    { "id": "neg_crab_3", "name": "Живой краб (бордовый)",         "image": "3979.png", "damage": 5,  "effect": "раны" },
     { "id": "neg_ray_1",  "name": "Живой электрический скат (синий)", "image": "3981.png", "damage": 10, "effect": "переломы" },
     { "id": "neg_ray_2",  "name": "Живой электрический скат (серый)", "image": "3983.png", "damage": 10, "effect": "переломы" },
-    { "id": "neg_snake",  "name": "Морская змея", "image": "3985.png", "damage": 10, "effect": "отравление" },
-    { "id": "neg_jelly",  "name": "Медуза", "image": "3986.png", "damage": 10, "effect": "отравление" }
+    { "id": "neg_snake",  "name": "Морская змея",                  "image": "3985.png", "damage": 10, "effect": "отравление" },
+    { "id": "neg_jelly",  "name": "Медуза",                        "image": "3986.png", "damage": 10, "effect": "отравление" }
   ]
 }
