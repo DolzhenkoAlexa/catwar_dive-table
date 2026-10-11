@@ -8,7 +8,7 @@
   --text: #1f3a4d;
   --text-dim: #6b8ba1;
   --border: #cfe4f0;
-  --c-text: #90a3b0;
+  --c-text: #4aa3d8;
   --c-neutral: #c0ded6;
   --c-positive: #6ec25a;
   --c-negative: #e57b7b;
@@ -49,6 +49,7 @@ header {
   justify-content: space-between;
   padding: 0.75rem 0.5rem;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 header h1 {
@@ -56,6 +57,13 @@ header h1 {
   font-size: 1.35rem;
   font-weight: 600;
   letter-spacing: 0.3px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .accounts {
@@ -176,13 +184,28 @@ header h1 {
 
 .chart-head h2 { margin: 0; }
 
-.chart-card { padding-bottom: 1rem; }
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  padding-bottom: 1rem;
+}
+
+.chart-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+}
 
 .chart-wrap {
   position: relative;
-  max-width: 260px;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 460px;
   margin: 0 auto;
-  aspect-ratio: 1 / 1;
 }
 
 .empty-chart {
@@ -221,18 +244,20 @@ button.primary {
 
 button.primary:hover { background: var(--accent-dark); }
 
-/* файлы */
-.files-row { display: flex; gap: 8px; flex-wrap: wrap; }
+/* файлы в шапке */
+.files-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .files-row button,
 .files-row .btn {
-  padding: 8px 14px;
+  padding: 6px 12px;
   border: 1px solid var(--border);
-  background: var(--bg-soft);
-  border-radius: 8px;
-  font-size: 0.85rem;
+  background: var(--card);
+  border-radius: 999px;
+  font-size: 0.82rem;
   cursor: pointer;
-  color: var(--text);
+  color: var(--text-dim);
+  transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .files-row button:hover,
@@ -322,7 +347,7 @@ button.primary:hover { background: var(--accent-dark); }
   flex-shrink: 0;
 }
 
-.tag.text     { background: #eef2f5; color: var(--c-text); }
+.tag.text     { background: #e3f1fa; color: #2b7dad; }
 .tag.neutral  { background: #eaf3f0; color: #6b8f85; }
 .tag.positive { background: #e6f5e0; color: #4c9e3a; }
 .tag.negative { background: #fbe5e5; color: #b85555; }
@@ -373,7 +398,15 @@ button.primary:hover { background: var(--accent-dark); }
   }
 
   header h1 { text-align: center; }
+
+  .header-right {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .accounts { justify-content: center; }
+  .files-row { justify-content: center; }
 
   .layout { grid-template-columns: 1fr; }
 
@@ -383,13 +416,5 @@ button.primary:hover { background: var(--accent-dark); }
 
   .stat-grid { grid-template-columns: repeat(3, 1fr); }
 
-  .chart-wrap { max-width: 220px; }
-}
-
-/* переключатели графика — общий ряд под заголовком */
-.chart-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 0.75rem;
+  .chart-wrap { min-height: 280px; }
 }
