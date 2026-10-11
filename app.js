@@ -5,13 +5,13 @@ const ACCOUNTS = [
 ];
 
 const CATEGORIES = {
-  text:     { name: 'Текстовый',     color: '#4aa3d8' },
+  text:     { name: 'Текстовый',     color: '#b8ddf0' },
   neutral:  { name: 'Нейтральный',   color: '#c0ded6' },
   positive: { name: 'Положительный', color: '#6ec25a' },
   negative: { name: 'Негативный',    color: '#e57b7b' }
 };
 
-// Группы позитивного лута (оттенки зелёного, коричневого и серого)
+// Группы позитивного лута
 const POS_GROUPS = [
   { key: 'moss',    label: 'Мхи',                 color: '#7cb342',
     match: n => n === 'Обычный мох' || n === 'Наполненный водой мох' },
@@ -26,10 +26,18 @@ const POS_GROUPS = [
   { key: 'stone_s', label: 'Небольшой камень',    color: '#b0bec5',
     match: n => n === 'Небольшой камень' },
   { key: 'stone_l', label: 'Камень',              color: '#90a4ae',
-    match: n => n === 'Камень' }
+    match: n => n === 'Камень' },
+  { key: 'coral',   label: 'Алые кораллы',        color: '#f57c00',
+    match: n => n.startsWith('Алый коралл') },
+  { key: 'seaweed', label: 'Листы водорослей',    color: '#ffb300',
+    match: n => n.startsWith('Лист морской водоросли') },
+  { key: 'kom',     label: 'Ком из веток и водорослей', color: '#00e676',
+    match: n => n === 'Ком из веток и водорослей' },
+  { key: 'iskra',   label: 'Искра',               color: '#ffee00',
+    match: n => n === 'Искра' }
 ];
 
-// Группы негативного лута (оттенки красного)
+// Группы негативного лута
 const NEG_GROUPS = [
   { key: 'crab',  label: 'Крабы',  color: '#b71c1c',
     match: n => n.startsWith('Живой краб') },
@@ -232,11 +240,15 @@ function renderDrops() {
       ? `<img src="${IMAGES_DIR}${item.image}" alt="" loading="lazy">`
       : '';
 
+    const noteHtml = item.note
+      ? `<span class="note">${escapeHtml(item.note)}</span>`
+      : '';
+
     return `
       <div class="drop-item">
         <div class="thumb">${thumb}</div>
         <span class="tag ${item.category}">${CATEGORIES[item.category].name}</span>
-        <span class="name">${escapeHtml(item.name)}</span>
+        <span class="name">${escapeHtml(item.name)}${noteHtml}</span>
         <span class="time">${time}</span>
         <button class="remove" onclick="removeDrop(${i})" title="Удалить">✕</button>
       </div>
@@ -354,7 +366,7 @@ function renderChart() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       animation: {
         animateRotate: false,
         animateScale: false,
