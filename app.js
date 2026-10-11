@@ -138,43 +138,6 @@ function resetFilter() {
   render();
 }
 
-function setPreset(kind) {
-  const today = new Date();
-  const toISO = d => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
-
-  if (kind === 'today') {
-    filterFrom = toISO(today);
-    filterTo   = toISO(today);
-  } else if (kind === 'yesterday') {
-    const y = new Date(today);
-    y.setDate(today.getDate() - 1);
-    filterFrom = toISO(y);
-    filterTo   = toISO(y);
-  } else if (kind === '7d') {
-    const from = new Date(today);
-    from.setDate(today.getDate() - 6);
-    filterFrom = toISO(from);
-    filterTo   = toISO(today);
-  } else if (kind === '30d') {
-    const from = new Date(today);
-    from.setDate(today.getDate() - 29);
-    filterFrom = toISO(from);
-    filterTo   = toISO(today);
-  } else {
-    filterFrom = '';
-    filterTo   = '';
-  }
-
-  document.getElementById('dateFrom').value = filterFrom;
-  document.getElementById('dateTo').value   = filterTo;
-  render();
-}
-
 // ===== Аккаунты =====
 function renderAccounts() {
   const nav = document.getElementById('accounts');
