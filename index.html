@@ -26,28 +26,6 @@
 
     <main class="layout">
       <div class="col col-left">
-        <section class="card filter-card">
-          <h2>Период</h2>
-          <div class="filter-row">
-            <label class="filter-field">
-              <span>с</span>
-              <input type="date" id="dateFrom" onchange="applyFilter()">
-            </label>
-            <label class="filter-field">
-              <span>по</span>
-              <input type="date" id="dateTo" onchange="applyFilter()">
-            </label>
-            <button class="filter-reset" onclick="resetFilter()" title="Сбросить">✕</button>
-          </div>
-          <div class="filter-presets">
-            <button onclick="setPreset('today')">Сегодня</button>
-            <button onclick="setPreset('yesterday')">Вчера</button>
-            <button onclick="setPreset('7d')">7 дней</button>
-            <button onclick="setPreset('30d')">30 дней</button>
-            <button onclick="setPreset('all')">Всё</button>
-          </div>
-        </section>
-
         <section class="card chart-card">
           <div class="chart-head">
             <h2>Соотношение лута</h2>
@@ -72,6 +50,15 @@
       </div>
 
       <div class="col col-right">
+        <section class="card filter-card">
+          <div class="filter-row">
+            <input type="date" id="dateFrom" onchange="applyFilter()" title="С даты">
+            <span class="filter-sep">–</span>
+            <input type="date" id="dateTo" onchange="applyFilter()" title="По дату">
+            <button class="filter-reset" onclick="resetFilter()" title="Сбросить фильтр">✕</button>
+          </div>
+        </section>
+
         <section class="card stats-card">
           <h2>Статистика: <span id="currentName"></span><span id="periodLabel" class="period-label"></span></h2>
           <div id="stats"></div>
@@ -85,6 +72,6 @@
     </main>
   </div>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>
