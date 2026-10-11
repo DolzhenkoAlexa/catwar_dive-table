@@ -3,14 +3,23 @@
     { "id": "txt_generic", "name": "Текстовое событие" }
   ],
   "neutral": [
-    { "id": "neu_salmon",   "name": "Коралловый лосось",   "image": "korallosos.png" },
-    { "id": "neu_lucian",   "name": "Жёлто-синий луциан",  "image": "yellowblue.png" },
-    { "id": "neu_surgeon",  "name": "Хирурговая рыба",     "image": "hirirrg.png" },
-    { "id": "neu_clown",    "name": "Рыба-клоун",          "image": "clownfish.png" },
-    { "id": "neu_sigan",    "name": "Сиган",               "image": "sigan.png" },
+    { "id": "neu_salmon",    "name": "Коралловый лосось",   "image": "korallosos.png" },
+    { "id": "neu_lucian",    "name": "Жёлто-синий луциан",  "image": "yellowblue.png" },
+    { "id": "neu_surgeon",   "name": "Хирурговая рыба",     "image": "hirirrg.png" },
+    { "id": "neu_clown",     "name": "Рыба-клоун",          "image": "clownfish.png" },
+    { "id": "neu_sigan",     "name": "Сиган",               "image": "sigan.png" },
     { "id": "neu_butterfly", "name": "Рыба-бабочка",        "image": "babochkafish.png" }
   ],
-  "positive": [],
+  "positive": [
+    { "id": "pos_moss",       "name": "Обычный мох",          "image": "moh.png" },
+    { "id": "pos_watermoss",  "name": "Наполненный водой мох", "image": "watermoh.png" },
+    { "id": "pos_dense",      "name": "Плотная водоросль",     "image": "plotnayaodorosl.png" },
+    { "id": "pos_healing",    "name": "Целебная водоросль",    "image": "celeb nayaodorosl.png" },
+    { "id": "pos_branch",     "name": "Крепкая ветка",         "image": "krepkayavetka.png" },
+    { "id": "pos_tiny_stone", "name": "Крошечный камень",      "image": "verysmallstone.png" },
+    { "id": "pos_small_stone","name": "Небольшой камень",      "image": "smallstone.png" },
+    { "id": "pos_stone",      "name": "Камень",                "image": "stone.png" }
+  ],
   "negative": [
     { "id": "neg_crab_1", "name": "Живой краб (оранжево-голубой)", "image": "3975.png", "damage": 5,  "effect": "раны" },
     { "id": "neg_crab_2", "name": "Живой краб (зелёный)",          "image": "3977.png", "damage": 5,  "effect": "раны" },
