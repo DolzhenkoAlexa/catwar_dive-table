@@ -9,7 +9,7 @@
   --text-dim: #6b8ba1;
   --border: #cfe4f0;
   --c-text: #90a3b0;
-  --c-neutral: #58b8a0;
+  --c-neutral: #c0ded6;
   --c-positive: #6ec25a;
   --c-negative: #e57b7b;
 }
@@ -323,7 +323,7 @@ button.primary:hover { background: var(--accent-dark); }
 }
 
 .tag.text     { background: #eef2f5; color: var(--c-text); }
-.tag.neutral  { background: #e2f4ef; color: #3a8f7a; }
+.tag.neutral  { background: #eaf3f0; color: #6b8f85; }
 .tag.positive { background: #e6f5e0; color: #4c9e3a; }
 .tag.negative { background: #fbe5e5; color: #b85555; }
 
