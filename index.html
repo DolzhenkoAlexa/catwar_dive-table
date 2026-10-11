@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🌊 Дайв-лут</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Chart.js для графика -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <header>
-    <h1>🌊 Дайв-лут</h1>
+    <h1>🌊 Дайв-лут 🌊</h1>
     <p class="subtitle">Трекер подводного лута</p>
   </header>
 
@@ -18,12 +17,15 @@
 
   <main>
     <section class="card stats-card">
-      <h2>Статистика — <span id="currentName"></span></h2>
+      <h2>Статистика: <span id="currentName"></span></h2>
       <div id="stats"></div>
     </section>
 
     <section class="card chart-card">
       <h2>Соотношение лута</h2>
+      <div class="chart-toggles">
+        <button id="toggleNeg" class="toggle active" onclick="toggleNeg()"></button>
+      </div>
       <div class="chart-wrap">
         <canvas id="pieChart"></canvas>
       </div>
@@ -51,9 +53,6 @@
           <input type="file" id="fileInput" accept=".json" hidden>
         </label>
       </div>
-      <p class="hint">
-        Скачал → закоммитил в <code>data/loot.json</code> → при следующем заходе данные тут.
-      </p>
     </section>
   </main>
 
