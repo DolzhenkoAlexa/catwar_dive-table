@@ -189,6 +189,8 @@ function renderDrops() {
     const item = findInCatalog(d.catalogId);
     if (!item) return '';
 
+    const num = drops.length - i;   // новый нырок сверху = самый большой номер
+
     const time = new Date(d.at).toLocaleString('ru-RU', {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     });
@@ -199,6 +201,7 @@ function renderDrops() {
 
     return `
       <div class="drop-item">
+        <span class="num">#${num}</span>
         <div class="thumb">${thumb}</div>
         <span class="tag ${item.category}">${CATEGORIES[item.category].name}</span>
         <span class="name">${escapeHtml(item.name)}</span>
@@ -302,6 +305,12 @@ function renderChart() {
     options: {
       responsive: true,
       maintainAspectRatio: true,
+      animation: {
+        animateRotate: false,   // ← не крутит пирог по кругу при обновлении
+        animateScale: false,    // ← не «выпрыгивает» из центра
+        duration: 250,          // ← быстрая смена
+        easing: 'easeOutQuad'
+      },
       plugins: {
         legend: {
           position: 'bottom',
