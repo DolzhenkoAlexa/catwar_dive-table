@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌊 Дайв-лут</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🌊 Дайв-лут</h1>
+    <p class="subtitle">Трекер подводного лута</p>
+  </header>
+
+  <nav class="accounts" id="accounts"></nav>
+
+  <main>
+    <section class="card stats-card">
+      <h2>Статистика — <span id="currentName"></span></h2>
+      <div id="stats"></div>
+    </section>
+
+    <section class="card add-card">
+      <h2>Добавить лут</h2>
+      <div class="add-row">
+        <select id="catalogSelect"></select>
+        <button class="primary" onclick="addDrop()">Добавить</button>
+      </div>
+    </section>
+
+    <section class="card drops-card">
+      <h2>Записи <span class="count" id="dropCount"></span></h2>
+      <div id="dropsList" class="drops-list"></div>
+    </section>
+
+    <section class="card files-card">
+      <h2>Файл данных</h2>
+      <div class="files-row">
+        <button onclick="exportFile()">💾 Скачать JSON</button>
+        <label class="btn">
+          📂 Загрузить JSON
+          <input type="file" id="fileInput" accept=".json" hidden>
+        </label>
+      </div>
+      <p class="hint">
+        Скачал → закоммитил в <code>data/loot.json</code> → при следующем заходе данные тут.
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
