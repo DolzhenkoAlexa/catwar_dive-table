@@ -14,7 +14,7 @@
     { "id": "pos_moss",       "name": "Обычный мох",          "image": "moh.png" },
     { "id": "pos_watermoss",  "name": "Наполненный водой мох", "image": "watermoh.png" },
     { "id": "pos_dense",      "name": "Плотная водоросль",     "image": "plotnayaodorosl.png" },
-    { "id": "pos_healing",    "name": "Целебная водоросль",    "image": "celeb nayaodorosl.png" },
+    { "id": "pos_healing",    "name": "Целебная водоросль",    "image": "celebnayaodorosl.png" },
     { "id": "pos_branch",     "name": "Крепкая ветка",         "image": "krepkayavetka.png" },
     { "id": "pos_tiny_stone", "name": "Крошечный камень",      "image": "verysmallstone.png" },
     { "id": "pos_small_stone","name": "Небольшой камень",      "image": "smallstone.png" },
