@@ -6,29 +6,52 @@ const ACCOUNTS = [
 
 const CATEGORIES = {
   text:     { name: 'Текстовый',     color: '#90a3b0' },
-  neutral:  { name: 'Нейтральный',   color: '#58b8a0' },
+  neutral:  { name: 'Нейтральный',   color: '#c0ded6' },
   positive: { name: 'Положительный', color: '#6ec25a' },
   negative: { name: 'Негативный',    color: '#e57b7b' }
 };
 
-// Группы негативного лута для графика (оттенки красного)
+// Группы позитивного лута (оттенки зелёного, коричневого и серого)
+const POS_GROUPS = [
+  { key: 'moss',    label: 'Мхи',                 color: '#7cb342',
+    match: n => n === 'Обычный мох' || n === 'Наполненный водой мох' },
+  { key: 'dense',   label: 'Плотная водоросль',   color: '#4caf50',
+    match: n => n === 'Плотная водоросль' },
+  { key: 'healing', label: 'Целебная водоросль',  color: '#2e7d32',
+    match: n => n === 'Целебная водоросль' },
+  { key: 'branch',  label: 'Крепкая ветка',       color: '#8d6e63',
+    match: n => n === 'Крепкая ветка' },
+  { key: 'stone_c', label: 'Крошечный камень',    color: '#cfd8dc',
+    match: n => n === 'Крошечный камень' },
+  { key: 'stone_s', label: 'Небольшой камень',    color: '#b0bec5',
+    match: n => n === 'Небольшой камень' },
+  { key: 'stone_l', label: 'Камень',              color: '#90a4ae',
+    match: n => n === 'Камень' }
+];
+
+// Группы негативного лута (оттенки красного)
 const NEG_GROUPS = [
-  { key: 'crab',  label: 'Крабы',  color: '#b71c1c', match: n => n.startsWith('Живой краб') },
-  { key: 'ray',   label: 'Скаты',  color: '#e53935', match: n => n.startsWith('Живой электрический скат') },
-  { key: 'snake', label: 'Змеи',   color: '#d4534f', match: n => n === 'Морская змея' },
-  { key: 'jelly', label: 'Медузы', color: '#ef9a9a', match: n => n === 'Медуза' }
+  { key: 'crab',  label: 'Крабы',  color: '#b71c1c',
+    match: n => n.startsWith('Живой краб') },
+  { key: 'ray',   label: 'Скаты',  color: '#e53935',
+    match: n => n.startsWith('Живой электрический скат') },
+  { key: 'snake', label: 'Змеи',   color: '#d4534f',
+    match: n => n === 'Морская змея' },
+  { key: 'jelly', label: 'Медузы', color: '#ef9a9a',
+    match: n => n === 'Медуза' }
 ];
 
 const CATALOG_URL = 'catalog.json';
 const DATA_URL    = 'data/loot.json';
-const IMAGES_DIR  = 'images/';   // если картинки в корне — поставь ''
+const IMAGES_DIR  = 'images/';
 
 // ===== Состояние =====
 let catalog = { text: [], neutral: [], positive: [], negative: [] };
 let data = {};
 let currentAccount = ACCOUNTS[0].id;
 let pieChart = null;
-let negGrouped = true;   // разделять ли негатив по видам
+let negGrouped = true;
+let posGrouped = true;
 
 // ===== Старт =====
 async function init() {
@@ -36,7 +59,7 @@ async function init() {
   ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
   renderAccounts();
   renderCatalogSelect();
-  updateToggleButton();
+  updateToggles();
   render();
 }
 
@@ -118,18 +141,30 @@ function findInCatalog(catalogId) {
   return null;
 }
 
-// ===== Переключатель негатива =====
+// ===== Переключатели =====
 function toggleNeg() {
   negGrouped = !negGrouped;
-  updateToggleButton();
+  updateToggles();
   renderChart();
 }
 
-function updateToggleButton() {
-  const btn = document.getElementById('toggleNeg');
-  if (!btn) return;
-  btn.textContent = negGrouped ? '🔴 Негатив: по видам' : '🔴 Негатив: общий';
-  btn.classList.toggle('active', negGrouped);
+function togglePos() {
+  posGrouped = !posGrouped;
+  updateToggles();
+  renderChart();
+}
+
+function updateToggles() {
+  const btnN = document.getElementById('toggleNeg');
+  if (btnN) {
+    btnN.textContent = negGrouped ? '🔴 Негатив: по видам' : '🔴 Негатив: общий';
+    btnN.classList.toggle('active', negGrouped);
+  }
+  const btnP = document.getElementById('togglePos');
+  if (btnP) {
+    btnP.textContent = posGrouped ? '🟢 Позитив: по видам' : '🟢 Позитив: общий';
+    btnP.classList.toggle('active', posGrouped);
+  }
 }
 
 // ===== Рендер =====
@@ -215,10 +250,13 @@ function renderChart() {
 
   let textCount = 0;
   let neutralCount = 0;
-  let positiveCount = 0;
+  let posTotal = 0;
   let negTotal = 0;
+  const posCounts = {};
   const negCounts = {};
+  POS_GROUPS.forEach(g => posCounts[g.key] = 0);
   NEG_GROUPS.forEach(g => negCounts[g.key] = 0);
+  let posOther = 0;
   let negOther = 0;
 
   drops.forEach(d => {
@@ -227,7 +265,12 @@ function renderChart() {
 
     if (item.category === 'text') textCount++;
     else if (item.category === 'neutral') neutralCount++;
-    else if (item.category === 'positive') positiveCount++;
+    else if (item.category === 'positive') {
+      posTotal++;
+      const g = POS_GROUPS.find(x => x.match(item.name));
+      if (g) posCounts[g.key]++;
+      else posOther++;
+    }
     else if (item.category === 'negative') {
       negTotal++;
       const g = NEG_GROUPS.find(x => x.match(item.name));
@@ -236,11 +279,22 @@ function renderChart() {
     }
   });
 
-  // Собираем срезы
   const slices = [];
-  if (textCount)     slices.push({ label: `Текст (${textCount})`,      value: textCount,     color: CATEGORIES.text.color });
-  if (neutralCount)  slices.push({ label: `Нейтрал (${neutralCount})`, value: neutralCount,  color: CATEGORIES.neutral.color });
-  if (positiveCount) slices.push({ label: `Позитив (${positiveCount})`, value: positiveCount, color: CATEGORIES.positive.color });
+  if (textCount)    slices.push({ label: `Текст (${textCount})`,       value: textCount,    color: CATEGORIES.text.color });
+  if (neutralCount) slices.push({ label: `Нейтрал (${neutralCount})`,  value: neutralCount, color: CATEGORIES.neutral.color });
+
+  if (posGrouped) {
+    POS_GROUPS.forEach(g => {
+      if (posCounts[g.key]) slices.push({
+        label: `${g.label} (${posCounts[g.key]})`,
+        value: posCounts[g.key],
+        color: g.color
+      });
+    });
+    if (posOther) slices.push({ label: `Позитив, прочее (${posOther})`, value: posOther, color: '#c5e1a5' });
+  } else {
+    if (posTotal) slices.push({ label: `Позитив (${posTotal})`, value: posTotal, color: CATEGORIES.positive.color });
+  }
 
   if (negGrouped) {
     NEG_GROUPS.forEach(g => {
@@ -250,7 +304,7 @@ function renderChart() {
         color: g.color
       });
     });
-    if (negOther) slices.push({ label: `Прочее (${negOther})`, value: negOther, color: '#7a4a4a' });
+    if (negOther) slices.push({ label: `Негатив, прочее (${negOther})`, value: negOther, color: '#7a4a4a' });
   } else {
     if (negTotal) slices.push({ label: `Негатив (${negTotal})`, value: negTotal, color: CATEGORIES.negative.color });
   }
@@ -258,7 +312,6 @@ function renderChart() {
   const canvas = document.getElementById('pieChart');
   if (!canvas) return;
 
-  // Пусто — заглушка
   if (!slices.length) {
     if (pieChart) { pieChart.destroy(); pieChart = null; }
     canvas.style.display = 'none';
@@ -303,17 +356,17 @@ function renderChart() {
       responsive: true,
       maintainAspectRatio: true,
       animation: {
-        animateRotate: false,   // ← не крутит пирог по кругу при обновлении
-        animateScale: false,    // ← не «выпрыгивает» из центра
-        duration: 250,          // ← быстрая смена
+        animateRotate: false,
+        animateScale: false,
+        duration: 250,
         easing: 'easeOutQuad'
       },
       plugins: {
         legend: {
           position: 'bottom',
           labels: {
-            font: { size: 13 },
-            padding: 12,
+            font: { size: 12 },
+            padding: 10,
             usePointStyle: true,
             pointStyle: 'circle',
             color: '#1f3a4d'
