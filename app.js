@@ -11,9 +11,17 @@ const CATEGORIES = {
   negative: { name: 'Негативный',    color: '#e57b7b' }
 };
 
+// Группы негативного лута для графика (оттенки красного)
+const NEG_GROUPS = [
+  { key: 'crab',  label: 'Крабы',  color: '#b71c1c', match: n => n.startsWith('Живой краб') },
+  { key: 'ray',   label: 'Скаты',  color: '#e53935', match: n => n.startsWith('Живой электрический скат') },
+  { key: 'snake', label: 'Змеи',   color: '#d4534f', match: n => n === 'Морская змея' },
+  { key: 'jelly', label: 'Медузы', color: '#ef9a9a', match: n => n === 'Медуза' }
+];
+
 const CATALOG_URL = 'catalog.json';
-const DATA_URL = 'data/loot.json';
-const IMAGES_DIR = 'images/';
+const DATA_URL    = 'data/loot.json';
+const IMAGES_DIR  = 'images/';   // если картинки в корне — поставь ''
 
 // ===== Состояние =====
 let catalog = { text: [], neutral: [], positive: [], negative: [] };
@@ -147,7 +155,7 @@ function renderStats() {
       <div class="stat-tile positive"><div class="label">Плюс</div><div class="value">${counts.positive}</div></div>
       <div class="stat-tile negative"><div class="label">Минус</div><div class="value">${counts.negative}</div></div>
     </div>
-    ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}</b> ед.${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
+    ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}</b>${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
   `;
 }
 
@@ -186,63 +194,49 @@ function renderDrops() {
 }
 
 // ===== График =====
-// Базовое название без уточнения в скобках:
-// "Живой краб (зелёный)" -> "Живой краб"
-function baseName(name) {
-  const idx = name.indexOf(' (');
-  return idx > -1 ? name.slice(0, idx) : name;
-}
-
-// Оттенок красного: от тёмного к светлому в зависимости от индекса
-function redShade(i, total) {
-  const t = total <= 1 ? 0 : i / (total - 1); // 0..1
-  const lightness = 38 + t * 34;              // 38%..72%
-  return `hsl(0, 62%, ${lightness}%)`;
-}
-
 function renderChart() {
   const drops = data[currentAccount] || [];
 
-  const nonNegCounts = { text: 0, neutral: 0, positive: 0 };
-  const negGroups = {}; // "Живой краб" -> количество
+  let textCount = 0;
+  let neutralCount = 0;
+  let positiveCount = 0;
+  const negCounts = {};
+  NEG_GROUPS.forEach(g => negCounts[g.key] = 0);
+  let negOther = 0;
 
   drops.forEach(d => {
     const item = findInCatalog(d.catalogId);
     if (!item) return;
-    if (item.category === 'negative') {
-      const key = baseName(item.name);
-      negGroups[key] = (negGroups[key] || 0) + 1;
-    } else {
-      nonNegCounts[item.category]++;
+
+    if (item.category === 'text') textCount++;
+    else if (item.category === 'neutral') neutralCount++;
+    else if (item.category === 'positive') positiveCount++;
+    else if (item.category === 'negative') {
+      const g = NEG_GROUPS.find(x => x.match(item.name));
+      if (g) negCounts[g.key]++;
+      else negOther++;
     }
   });
 
-  const labels = [];
-  const values = [];
-  const colors = [];
-
-  // Одна секция на каждую негневную категорию
-  for (const cat of ['text', 'neutral', 'positive']) {
-    if (nonNegCounts[cat] > 0) {
-      labels.push(`${CATEGORIES[cat].name} (${nonNegCounts[cat]})`);
-      values.push(nonNegCounts[cat]);
-      colors.push(CATEGORIES[cat].color);
-    }
-  }
-
-  // Секции для негатива — каждая группа отдельно, разные оттенки красного
-  const negSorted = Object.entries(negGroups).sort((a, b) => b[1] - a[1]);
-  negSorted.forEach(([name, count], i) => {
-    labels.push(`${name} (${count})`);
-    values.push(count);
-    colors.push(redShade(i, negSorted.length));
+  // Собираем срезы
+  const slices = [];
+  if (textCount)     slices.push({ label: `Текст (${textCount})`,      value: textCount,     color: CATEGORIES.text.color });
+  if (neutralCount)  slices.push({ label: `Нейтрал (${neutralCount})`, value: neutralCount,  color: CATEGORIES.neutral.color });
+  if (positiveCount) slices.push({ label: `Позитив (${positiveCount})`, value: positiveCount, color: CATEGORIES.positive.color });
+  NEG_GROUPS.forEach(g => {
+    if (negCounts[g.key]) slices.push({
+      label: `${g.label} (${negCounts[g.key]})`,
+      value: negCounts[g.key],
+      color: g.color
+    });
   });
+  if (negOther) slices.push({ label: `Прочее (${negOther})`, value: negOther, color: '#7a4a4a' });
 
   const canvas = document.getElementById('pieChart');
   if (!canvas) return;
 
-  // пусто → заглушка
-  if (!values.length) {
+  // Пусто — заглушка
+  if (!slices.length) {
     if (pieChart) { pieChart.destroy(); pieChart = null; }
     canvas.style.display = 'none';
     let empty = canvas.parentElement.querySelector('.empty-chart');
@@ -258,6 +252,10 @@ function renderChart() {
     const empty = canvas.parentElement.querySelector('.empty-chart');
     if (empty) empty.remove();
   }
+
+  const labels = slices.map(s => s.label);
+  const values = slices.map(s => s.value);
+  const colors = slices.map(s => s.color);
 
   if (pieChart) {
     pieChart.data.labels = labels;
@@ -286,7 +284,7 @@ function renderChart() {
           position: 'bottom',
           labels: {
             font: { size: 13 },
-            padding: 10,
+            padding: 12,
             usePointStyle: true,
             pointStyle: 'circle',
             color: '#1f3a4d'
