@@ -229,4 +229,22 @@ button.primary:hover { background: var(--accent-dark); }
   color: var(--text-dim);
   padding: 2rem 0;
   font-size: 0.9rem;
+
+}
+
+/* график */
+.chart-card { padding-bottom: 1.5rem; }
+
+.chart-wrap {
+  position: relative;
+  max-width: 380px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+}
+
+.empty-chart {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 3rem 0;
+  font-size: 0.9rem;
 }
