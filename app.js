@@ -5,29 +5,26 @@ const ACCOUNTS = [
 ];
 
 const CATEGORIES = {
-  text:     { name: 'Текстовый' },
-  neutral:  { name: 'Нейтральный' },
-  positive: { name: 'Положительный' },
-  negative: { name: 'Негативный' }
+  text:     { name: 'Текстовый',    color: '#90a3b0' },
+  neutral:  { name: 'Нейтральный',  color: '#58b8a0' },
+  positive: { name: 'Положительный', color: '#6ec25a' },
+  negative: { name: 'Негативный',   color: '#e57b7b' }
 };
 
 const CATALOG_URL = 'catalog.json';
 const DATA_URL = 'data/loot.json';
+const IMAGES_DIR = 'images/';   // если картинки в корне — оставь ''
 
 // ===== Состояние =====
 let catalog = { text: [], neutral: [], positive: [], negative: [] };
-let data = {};                 // { phil: [drops], shao: [drops] }
+let data = {};
 let currentAccount = ACCOUNTS[0].id;
+let pieChart = null;
 
 // ===== Старт =====
 async function init() {
   await Promise.all([loadCatalog(), loadData()]);
-
-  // убедимся, что у всех аккаунтов есть массив
-  ACCOUNTS.forEach(a => {
-    if (!Array.isArray(data[a.id])) data[a.id] = [];
-  });
-
+  ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
   renderAccounts();
   renderCatalogSelect();
   render();
@@ -69,22 +66,18 @@ function switchAccount(id) {
   render();
 }
 
-// ===== Выпадающий список каталога =====
+// ===== Каталог =====
 function renderCatalogSelect() {
   const sel = document.getElementById('catalogSelect');
   const groups = [];
-
   for (const cat of Object.keys(CATEGORIES)) {
     const items = catalog[cat] || [];
     if (!items.length) continue;
-
     const opts = items.map(it =>
       `<option value="${cat}::${it.id}">${escapeHtml(it.name)}</option>`
     ).join('');
-
     groups.push(`<optgroup label="${CATEGORIES[cat].name}">${opts}</optgroup>`);
   }
-
   sel.innerHTML = groups.join('') || '<option disabled>Каталог пуст</option>';
 }
 
@@ -93,14 +86,11 @@ function addDrop() {
   const raw = document.getElementById('catalogSelect').value;
   if (!raw) return;
   const [cat, id] = raw.split('::');
-
-  const drop = {
+  data[currentAccount].unshift({
     catalogId: id,
     category: cat,
     at: new Date().toISOString()
-  };
-
-  data[currentAccount].unshift(drop);
+  });
   render();
 }
 
@@ -109,7 +99,7 @@ function removeDrop(index) {
   render();
 }
 
-// ===== Поиск в каталоге =====
+// ===== Поиск =====
 function findInCatalog(catalogId) {
   for (const cat of Object.keys(catalog)) {
     const found = (catalog[cat] || []).find(x => x.id === catalogId);
@@ -122,6 +112,7 @@ function findInCatalog(catalogId) {
 function render() {
   renderStats();
   renderDrops();
+  renderChart();
 }
 
 function renderStats() {
@@ -134,7 +125,6 @@ function renderStats() {
     const item = findInCatalog(d.catalogId);
     if (!item) return;
     counts[item.category] = (counts[item.category] || 0) + 1;
-
     if (item.category === 'negative') {
       totalDamage += item.damage || 0;
       if (item.effect) damage[item.effect] = (damage[item.effect] || 0) + (item.damage || 0);
@@ -180,7 +170,7 @@ function renderDrops() {
     });
 
     const thumb = item.image
-      ? `<img src="images/${item.image}" alt="">`
+      ? `<img src="${IMAGES_DIR}${item.image}" alt="" loading="lazy">`
       : '';
 
     return `
@@ -195,14 +185,103 @@ function renderDrops() {
   }).join('');
 }
 
+// ===== График =====
+function renderChart() {
+  const drops = data[currentAccount] || [];
+  const counts = { text: 0, neutral: 0, positive: 0, negative: 0 };
+  drops.forEach(d => {
+    const item = findInCatalog(d.catalogId);
+    if (item) counts[item.category]++;
+  });
+
+  const labels = [];
+  const values = [];
+  const colors = [];
+
+  for (const cat of Object.keys(CATEGORIES)) {
+    if (counts[cat] > 0) {
+      labels.push(`${CATEGORIES[cat].name} (${counts[cat]})`);
+      values.push(counts[cat]);
+      colors.push(CATEGORIES[cat].color);
+    }
+  }
+
+  const canvas = document.getElementById('pieChart');
+  if (!canvas) return;
+
+  // если всё пусто — покажем заглушку
+  if (!values.length) {
+    if (pieChart) { pieChart.destroy(); pieChart = null; }
+    canvas.style.display = 'none';
+    let empty = canvas.parentElement.querySelector('.empty-chart');
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.className = 'empty-chart';
+      empty.textContent = 'Нет данных для графика';
+      canvas.parentElement.appendChild(empty);
+    }
+    return;
+  } else {
+    canvas.style.display = '';
+    const empty = canvas.parentElement.querySelector('.empty-chart');
+    if (empty) empty.remove();
+  }
+
+  if (pieChart) {
+    // обновляем существующий
+    pieChart.data.labels = labels;
+    pieChart.data.datasets[0].data = values;
+    pieChart.data.datasets[0].backgroundColor = colors;
+    pieChart.update();
+    return;
+  }
+
+  pieChart = new Chart(canvas, {
+    type: 'pie',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderColor: '#ffffff',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { size: 13 },
+            padding: 12,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            color: '#1f3a4d'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = ((ctx.parsed / total) * 100).toFixed(1);
+              return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 // ===== Экспорт / импорт =====
 function exportFile() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const date = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = `loot.json`;
+  a.download = 'loot.json';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -210,19 +289,15 @@ function exportFile() {
 document.getElementById('fileInput').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = ev => {
     try {
       const parsed = JSON.parse(ev.target.result);
       if (typeof parsed !== 'object' || Array.isArray(parsed))
         throw new Error('ожидался объект с аккаунтами');
-
       if (!confirm('Заменить текущие данные содержимым файла?')) {
-        e.target.value = '';
-        return;
+        e.target.value = ''; return;
       }
-
       data = parsed;
       ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
       render();
@@ -241,5 +316,4 @@ function escapeHtml(s) {
   }[c]));
 }
 
-// Погнали
 init();
