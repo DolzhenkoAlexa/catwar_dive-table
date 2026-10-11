@@ -56,6 +56,7 @@
             <span class="filter-sep">–</span>
             <input type="date" id="dateTo" onchange="applyFilter()" title="По дату">
             <button class="filter-reset" onclick="resetFilter()" title="Сбросить фильтр">✕</button>
+            <button class="notes-btn" onclick="openNotesModal()" title="Заметки">?</button>
           </div>
         </section>
 
@@ -71,6 +72,28 @@
       </div>
     </main>
   </div>
+
+  <!-- Модалка заметок -->
+  <div class="modal-overlay" id="notesOverlay" onclick="closeNotesModal(event)">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Заметки</h3>
+        <button class="modal-close" onclick="closeNotesModal()">✕</button>
+      </div>
+      <p class="modal-hint">
+        Любой текст: события, прокачка навыков, покупки. Сохраняется в <code>catalog.json</code> — не забудь нажать «Скачать JSON» в шапке, чтобы забрать файл.
+      </p>
+      <div class="notes-list" id="notesList"></div>
+      <div class="notes-add">
+        <textarea id="noteInput" placeholder="Новая заметка..." rows="2"></textarea>
+        <button class="primary" onclick="addNote()">Добавить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=14"></script>
+</body>
+</html>
 
   <script src="app.js?v=13"></script>
 </body>
