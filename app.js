@@ -5,15 +5,15 @@ const ACCOUNTS = [
 ];
 
 const CATEGORIES = {
-  text:     { name: 'Текстовый',    color: '#90a3b0' },
-  neutral:  { name: 'Нейтральный',  color: '#58b8a0' },
+  text:     { name: 'Текстовый',     color: '#90a3b0' },
+  neutral:  { name: 'Нейтральный',   color: '#58b8a0' },
   positive: { name: 'Положительный', color: '#6ec25a' },
-  negative: { name: 'Негативный',   color: '#e57b7b' }
+  negative: { name: 'Негативный',    color: '#e57b7b' }
 };
 
 const CATALOG_URL = 'catalog.json';
 const DATA_URL = 'data/loot.json';
-const IMAGES_DIR = 'images/';   // если картинки в корне — оставь ''
+const IMAGES_DIR = 'images/';
 
 // ===== Состояние =====
 let catalog = { text: [], neutral: [], positive: [], negative: [] };
@@ -136,7 +136,7 @@ function renderStats() {
 
   const damageLine = Object.entries(damage)
     .filter(([, v]) => v > 0)
-    .map(([k, v]) => `${k}: <b>${v}%</b>`)
+    .map(([k, v]) => `${k}: <b>${v}</b>`)
     .join(' · ');
 
   document.getElementById('stats').innerHTML = `
@@ -147,7 +147,7 @@ function renderStats() {
       <div class="stat-tile positive"><div class="label">Плюс</div><div class="value">${counts.positive}</div></div>
       <div class="stat-tile negative"><div class="label">Минус</div><div class="value">${counts.negative}</div></div>
     </div>
-    ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}%</b>${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
+    ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}</b> ед.${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
   `;
 }
 
@@ -186,30 +186,62 @@ function renderDrops() {
 }
 
 // ===== График =====
+// Базовое название без уточнения в скобках:
+// "Живой краб (зелёный)" -> "Живой краб"
+function baseName(name) {
+  const idx = name.indexOf(' (');
+  return idx > -1 ? name.slice(0, idx) : name;
+}
+
+// Оттенок красного: от тёмного к светлому в зависимости от индекса
+function redShade(i, total) {
+  const t = total <= 1 ? 0 : i / (total - 1); // 0..1
+  const lightness = 38 + t * 34;              // 38%..72%
+  return `hsl(0, 62%, ${lightness}%)`;
+}
+
 function renderChart() {
   const drops = data[currentAccount] || [];
-  const counts = { text: 0, neutral: 0, positive: 0, negative: 0 };
+
+  const nonNegCounts = { text: 0, neutral: 0, positive: 0 };
+  const negGroups = {}; // "Живой краб" -> количество
+
   drops.forEach(d => {
     const item = findInCatalog(d.catalogId);
-    if (item) counts[item.category]++;
+    if (!item) return;
+    if (item.category === 'negative') {
+      const key = baseName(item.name);
+      negGroups[key] = (negGroups[key] || 0) + 1;
+    } else {
+      nonNegCounts[item.category]++;
+    }
   });
 
   const labels = [];
   const values = [];
   const colors = [];
 
-  for (const cat of Object.keys(CATEGORIES)) {
-    if (counts[cat] > 0) {
-      labels.push(`${CATEGORIES[cat].name} (${counts[cat]})`);
-      values.push(counts[cat]);
+  // Одна секция на каждую негневную категорию
+  for (const cat of ['text', 'neutral', 'positive']) {
+    if (nonNegCounts[cat] > 0) {
+      labels.push(`${CATEGORIES[cat].name} (${nonNegCounts[cat]})`);
+      values.push(nonNegCounts[cat]);
       colors.push(CATEGORIES[cat].color);
     }
   }
 
+  // Секции для негатива — каждая группа отдельно, разные оттенки красного
+  const negSorted = Object.entries(negGroups).sort((a, b) => b[1] - a[1]);
+  negSorted.forEach(([name, count], i) => {
+    labels.push(`${name} (${count})`);
+    values.push(count);
+    colors.push(redShade(i, negSorted.length));
+  });
+
   const canvas = document.getElementById('pieChart');
   if (!canvas) return;
 
-  // если всё пусто — покажем заглушку
+  // пусто → заглушка
   if (!values.length) {
     if (pieChart) { pieChart.destroy(); pieChart = null; }
     canvas.style.display = 'none';
@@ -228,7 +260,6 @@ function renderChart() {
   }
 
   if (pieChart) {
-    // обновляем существующий
     pieChart.data.labels = labels;
     pieChart.data.datasets[0].data = values;
     pieChart.data.datasets[0].backgroundColor = colors;
@@ -255,7 +286,7 @@ function renderChart() {
           position: 'bottom',
           labels: {
             font: { size: 13 },
-            padding: 12,
+            padding: 10,
             usePointStyle: true,
             pointStyle: 'circle',
             color: '#1f3a4d'
