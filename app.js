@@ -199,7 +199,6 @@ function render() {
   renderDrops();
   renderChart();
 }
-
 function renderStats() {
   const drops = data[currentAccount] || [];
   const counts = { text: 0, neutral: 0, positive: 0, super: 0, negative: 0 };
@@ -225,6 +224,9 @@ function renderStats() {
   document.getElementById('currentName').textContent =
     ACCOUNTS.find(a => a.id === currentAccount).name;
 
+  const total = drops.length;
+  const pct = n => total ? ((n / total) * 100).toFixed(1).replace('.0', '') + '%' : '0%';
+
   const damageLine = Object.entries(damage)
     .filter(([, v]) => v > 0)
     .map(([k, v]) => `${k}: <b>${v}</b>`)
@@ -242,16 +244,16 @@ function renderStats() {
 
   document.getElementById('stats').innerHTML = `
     <div class="stat-grid">
-      <div class="stat-tile"><div class="label">Всего</div><div class="value">${drops.length}</div></div>
-      <div class="stat-tile text"><div class="label">Текст</div><div class="value">${counts.text}</div></div>
-      <div class="stat-tile neutral"><div class="label">Нейтрал</div><div class="value">${counts.neutral}</div></div>
-      <div class="stat-tile positive"><div class="label">Плюс</div><div class="value">${counts.positive}</div></div>
+      <div class="stat-tile"><div class="label">Всего</div><div class="value">${total}<span class="pct">${total ? '100%' : '0%'}</span></div></div>
+      <div class="stat-tile text"><div class="label">Текст</div><div class="value">${counts.text}<span class="pct">${pct(counts.text)}</span></div></div>
+      <div class="stat-tile neutral"><div class="label">Нейтрал</div><div class="value">${counts.neutral}<span class="pct">${pct(counts.neutral)}</span></div></div>
+      <div class="stat-tile positive"><div class="label">Плюс</div><div class="value">${counts.positive}<span class="pct">${pct(counts.positive)}</span></div></div>
       <div class="stat-tile super${superList.length ? ' has-popup' : ''}">
         <div class="label">Супер</div>
-        <div class="value">${counts.super}</div>
+        <div class="value">${counts.super}<span class="pct">${pct(counts.super)}</span></div>
         ${superPopup}
       </div>
-      <div class="stat-tile negative"><div class="label">Минус</div><div class="value">${counts.negative}</div></div>
+      <div class="stat-tile negative"><div class="label">Минус</div><div class="value">${counts.negative}<span class="pct">${pct(counts.negative)}</span></div></div>
     </div>
     ${totalDamage ? `<div class="damage-line">Суммарный урон: <b>${totalDamage}</b>${damageLine ? ' · ' + damageLine : ''}</div>` : ''}
   `;
