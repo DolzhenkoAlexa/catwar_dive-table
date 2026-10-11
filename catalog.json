@@ -21,11 +21,11 @@
     { "id": "pos_stone",      "name": "Камень",                         "image": "stone.png" },
     { "id": "pos_coral_1",    "name": "Алый коралл (1)",                "image": "redcoral1.png" },
     { "id": "pos_coral_2",    "name": "Алый коралл (2)",                "image": "redcoral2.png" },
-    { "id": "pos_seaweed_1",  "name": "Лист морской водоросли (1)",     "image": "listseaodorosl1.png", "note": "на сон" },
+    { "id": "pos_seaweed_1",  "name": "Лист морской водоросли (1)",     "image": "listseaodorosl1.png", "note": " на сон" },
     { "id": "pos_seaweed_2",  "name": "Лист морской водоросли (2)",     "image": "listseaodorosl2.png" },
     { "id": "pos_seaweed_3",  "name": "Лист морской водоросли (3)",     "image": "listseaodorosl3.png" },
     { "id": "pos_kom",        "name": "Ком из веток и водорослей",      "image": "kom.png" },
-    { "id": "pos_iskra",      "name": "Искра",                          "image": "" }
+    { "id": "pos_iskra",      "name": "Искра",                          "image": "iskra.png" }
   ],
   "negative": [
     { "id": "neg_crab_1", "name": "Живой краб (оранжево-голубой)", "image": "3975.png", "damage": 5,  "effect": "раны" },
