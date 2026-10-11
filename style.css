@@ -8,7 +8,7 @@
   --text: #1f3a4d;
   --text-dim: #6b8ba1;
   --border: #cfe4f0;
-  --c-text: #4aa3d8;
+  --c-text: #b8ddf0;
   --c-neutral: #c0ded6;
   --c-positive: #6ec25a;
   --c-negative: #e57b7b;
@@ -347,7 +347,7 @@ button.primary:hover { background: var(--accent-dark); }
   flex-shrink: 0;
 }
 
-.tag.text     { background: #e3f1fa; color: #2b7dad; }
+.tag.text     { background: #e0eff8; color: #5a9bc0; }
 .tag.neutral  { background: #eaf3f0; color: #6b8f85; }
 .tag.positive { background: #e6f5e0; color: #4c9e3a; }
 .tag.negative { background: #fbe5e5; color: #b85555; }
@@ -378,6 +378,18 @@ button.primary:hover { background: var(--accent-dark); }
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}
+
+/* пометки к луту (например «на сон») */
+.drop-item .note {
+  font-size: 0.68rem;
+  color: #7b5e00;
+  background: #fff3c4;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* адаптив */
