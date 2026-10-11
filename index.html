@@ -15,13 +15,8 @@
     </header>
 
     <main class="layout">
-      <!-- Левая колонка -->
+      <!-- Левая колонка: график, добавление, файлы -->
       <div class="col col-left">
-        <section class="card stats-card">
-          <h2>Статистика: <span id="currentName"></span></h2>
-          <div id="stats"></div>
-        </section>
-
         <section class="card chart-card">
           <div class="chart-head">
             <h2>Соотношение лута</h2>
@@ -51,8 +46,13 @@
         </section>
       </div>
 
-      <!-- Правая колонка -->
+      <!-- Правая колонка: статистика + записи -->
       <div class="col col-right">
+        <section class="card stats-card">
+          <h2>Статистика: <span id="currentName"></span></h2>
+          <div id="stats"></div>
+        </section>
+
         <section class="card drops-card">
           <h2>Записи <span class="count" id="dropCount"></span></h2>
           <div id="dropsList" class="drops-list"></div>
@@ -61,6 +61,6 @@
     </main>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
