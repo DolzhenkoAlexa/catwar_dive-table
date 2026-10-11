@@ -1,0 +1,19 @@
+{
+  "text": [
+    { "id": "txt_skat_attack",   "name": "Скат попытался меня атаковать. Едва увернулся." },
+    { "id": "txt_seaweed",       "name": "Запутался в водорослях. Едва выжил." },
+    { "id": "txt_lobster",       "name": "Увидел лобстера. Лобстер угрожающе клацнул клешнями." },
+    { "id": "txt_big_lobster",   "name": "Увидел огромного лобстера. Испугался." }
+  ],
+  "neutral": [],
+  "positive": [],
+  "negative": [
+    { "id": "neg_crab_1", "name": "Живой краб (вид 1)", "image": "3975.png", "damage": 5,  "effect": "раны" },
+    { "id": "neg_crab_2", "name": "Живой краб (вид 2)", "image": "3977.png", "damage": 5,  "effect": "раны" },
+    { "id": "neg_crab_3", "name": "Живой краб (вид 3)", "image": "3979.png", "damage": 5,  "effect": "раны" },
+    { "id": "neg_ray_1",  "name": "Живой электрический скат (вид 1)", "image": "3981.png", "damage": 10, "effect": "переломы" },
+    { "id": "neg_ray_2",  "name": "Живой электрический скат (вид 2)", "image": "3983.png", "damage": 10, "effect": "переломы" },
+    { "id": "neg_snake",  "name": "Морская змея", "image": "", "damage": 10, "effect": "отравление" },
+    { "id": "neg_jelly",  "name": "Медуза", "image": "3986.png", "damage": 10, "effect": "отравление" }
+  ]
+}
