@@ -99,7 +99,7 @@ header h1 {
   min-height: 0;
 }
 
-.col-left { overflow-y: auto; }
+.col-left { min-height: 0; }
 .col-right { min-height: 0; }
 
 /* карточки */
