@@ -487,79 +487,53 @@ button.primary:hover { background: var(--accent-dark); }
 }
 
 /* карточка фильтра по датам */
-.filter-card h2 { margin-bottom: 0.6rem; }
+.filter-card {
+  padding: 0.55rem 0.9rem;
+}
 
 .filter-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-
-.filter-field {
-  display: flex;
-  align-items: center;
   gap: 6px;
-  flex: 1;
-  min-width: 140px;
-  font-size: 0.85rem;
-  color: var(--text-dim);
 }
 
-.filter-field input[type="date"] {
+.filter-row input[type="date"] {
   flex: 1;
   min-width: 0;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg-soft);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-family: inherit;
 }
 
-.filter-field input[type="date"]:focus {
+.filter-row input[type="date"]:focus {
   outline: none;
   border-color: var(--accent);
 }
 
+.filter-sep {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
 .filter-reset {
-  padding: 6px 10px;
+  padding: 5px 10px;
   border: 1px solid var(--border);
   background: var(--bg-soft);
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   cursor: pointer;
   transition: all 0.15s;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .filter-reset:hover { border-color: var(--accent); color: var(--accent-dark); }
-
-.filter-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.filter-presets button {
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
-  border-radius: 999px;
-  font-size: 0.76rem;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.filter-presets button:hover {
-  border-color: var(--accent);
-  color: var(--accent-dark);
-}
 
 /* метка периода в заголовке статистики */
 .period-label {
