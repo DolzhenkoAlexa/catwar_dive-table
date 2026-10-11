@@ -362,16 +362,7 @@ function renderChart() {
         easing: 'easeOutQuad'
       },
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: { size: 12 },
-            padding: 10,
-            usePointStyle: true,
-            pointStyle: 'circle',
-            color: '#1f3a4d'
-          }
-        },
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: ctx => {
