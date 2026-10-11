@@ -1,7 +1,7 @@
 // ===== Настройки =====
 const ACCOUNTS = [
   { id: 'phil', name: 'Фил' },
-  { id: 'shao', name: 'шао' }
+  { id: 'shao', name: 'Шао' }
 ];
 
 const CATEGORIES = {
@@ -28,6 +28,7 @@ let catalog = { text: [], neutral: [], positive: [], negative: [] };
 let data = {};
 let currentAccount = ACCOUNTS[0].id;
 let pieChart = null;
+let negGrouped = true;   // разделять ли негатив по видам
 
 // ===== Старт =====
 async function init() {
@@ -35,6 +36,7 @@ async function init() {
   ACCOUNTS.forEach(a => { if (!Array.isArray(data[a.id])) data[a.id] = []; });
   renderAccounts();
   renderCatalogSelect();
+  updateToggleButton();
   render();
 }
 
@@ -114,6 +116,20 @@ function findInCatalog(catalogId) {
     if (found) return { ...found, category: cat };
   }
   return null;
+}
+
+// ===== Переключатель негатива =====
+function toggleNeg() {
+  negGrouped = !negGrouped;
+  updateToggleButton();
+  renderChart();
+}
+
+function updateToggleButton() {
+  const btn = document.getElementById('toggleNeg');
+  if (!btn) return;
+  btn.textContent = negGrouped ? '🔴 Негатив: по видам' : '🔴 Негатив: общий';
+  btn.classList.toggle('active', negGrouped);
 }
 
 // ===== Рендер =====
@@ -200,6 +216,7 @@ function renderChart() {
   let textCount = 0;
   let neutralCount = 0;
   let positiveCount = 0;
+  let negTotal = 0;
   const negCounts = {};
   NEG_GROUPS.forEach(g => negCounts[g.key] = 0);
   let negOther = 0;
@@ -212,6 +229,7 @@ function renderChart() {
     else if (item.category === 'neutral') neutralCount++;
     else if (item.category === 'positive') positiveCount++;
     else if (item.category === 'negative') {
+      negTotal++;
       const g = NEG_GROUPS.find(x => x.match(item.name));
       if (g) negCounts[g.key]++;
       else negOther++;
@@ -223,14 +241,19 @@ function renderChart() {
   if (textCount)     slices.push({ label: `Текст (${textCount})`,      value: textCount,     color: CATEGORIES.text.color });
   if (neutralCount)  slices.push({ label: `Нейтрал (${neutralCount})`, value: neutralCount,  color: CATEGORIES.neutral.color });
   if (positiveCount) slices.push({ label: `Позитив (${positiveCount})`, value: positiveCount, color: CATEGORIES.positive.color });
-  NEG_GROUPS.forEach(g => {
-    if (negCounts[g.key]) slices.push({
-      label: `${g.label} (${negCounts[g.key]})`,
-      value: negCounts[g.key],
-      color: g.color
+
+  if (negGrouped) {
+    NEG_GROUPS.forEach(g => {
+      if (negCounts[g.key]) slices.push({
+        label: `${g.label} (${negCounts[g.key]})`,
+        value: negCounts[g.key],
+        color: g.color
+      });
     });
-  });
-  if (negOther) slices.push({ label: `Прочее (${negOther})`, value: negOther, color: '#7a4a4a' });
+    if (negOther) slices.push({ label: `Прочее (${negOther})`, value: negOther, color: '#7a4a4a' });
+  } else {
+    if (negTotal) slices.push({ label: `Негатив (${negTotal})`, value: negTotal, color: CATEGORIES.negative.color });
+  }
 
   const canvas = document.getElementById('pieChart');
   if (!canvas) return;
