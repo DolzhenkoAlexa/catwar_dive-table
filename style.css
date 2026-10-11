@@ -648,6 +648,20 @@ button.primary:hover { background: var(--accent-dark); }
   padding: 1rem 0;
 }
 
+/* заголовок «Заметки: Фил» внутри списка */
+.notes-owner {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.notes-owner b {
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
 .note-item {
   display: flex;
   align-items: flex-start;
