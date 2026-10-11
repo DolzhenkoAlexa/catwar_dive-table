@@ -19,22 +19,26 @@
 html, body {
   height: 100%;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: linear-gradient(180deg, #e8f4fb 0%, #d8ecf7 100%);
   color: var(--text);
-  overflow: hidden; /* страница не скроллится */
 }
 
 .app {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 0 1rem 1rem;
+  padding: 0 1rem 0.75rem;
   max-width: 1200px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* шапка */
@@ -43,7 +47,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0.5rem;
+  padding: 0.75rem 0.5rem;
   gap: 1rem;
 }
 
@@ -82,7 +86,7 @@ header h1 {
 /* двухколоночный layout */
 .layout {
   flex: 1;
-  min-height: 0; /* важно для скролла внутри колонок */
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
   gap: 1rem;
@@ -353,12 +357,13 @@ button.primary:hover { background: var(--accent-dark); }
 
 /* адаптив */
 @media (max-width: 780px) {
-  body { overflow: auto; }
+  html, body { overflow: auto; }
 
   .app {
     height: auto;
     min-height: 100vh;
     padding-bottom: 2rem;
+    overflow: visible;
   }
 
   header {
