@@ -433,3 +433,46 @@ button.primary:hover { background: var(--accent-dark); }
 
   .chart-wrap { min-height: 280px; }
 }
+
+/* тултип на плитке статистики */
+.stat-tile.has-popup {
+  position: relative;
+  cursor: help;
+}
+
+.tile-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 6px 20px rgba(40, 90, 130, 0.18);
+  font-size: 0.82rem;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 30;
+  min-width: 100%;
+  max-width: 260px;
+}
+
+.tile-popup div {
+  padding: 2px 0;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-popup div b {
+  color: var(--accent-dark);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.stat-tile.has-popup:hover .tile-popup {
+  opacity: 1;
+}
